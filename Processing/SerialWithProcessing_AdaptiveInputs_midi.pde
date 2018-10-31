@@ -10,6 +10,31 @@ import themidibus.*; //Import the library
 MidiBus myBus; // The MidiBus
 
 
+int channel = 0;
+int pitch = 0;
+int velocity = 127;
+
+int number = 0;
+int value = 90;
+
+// escalas
+
+// Matriz de escalas
+// primera matriz: pentatónica menor C
+// segunda matriz: mayor natural C
+// tercera matriz: menor dorica C
+// cuarta matriz: escala hexatona C
+int scale = 0; //por defecto pentatonica menor
+int notes[][] = {{0,3,5,7,10,12,15,17,19,22,24,27,29,31,34,36,39,41,43,46,48,51,53,55,58,60,63,65,67,70,72,75,77,79,82,84,87,89,91,94,96,99,101,103,106,108,111,113,115,118,120,123,125,127}
+,{0,2,4,5,7,9,11,12,14,16,17,19,21,23,24,26,28,29,31,33,35,36,38,40,41,43,45,47,48,50,52,53,55,57,59,60,62,64,65,67,69,71,72,74,76,77,79,81,83,84,86,88,89,91,93,95,96,98,100,101,103,105,107,108,110,112,113,115,117,119,120,122,124,125,127}
+,{0,2,3,5,7,9,10,12,14,15,17,19,21,22,24,26,27,29,31,33,34,36,38,39,41,43,45,46,48,50,51,53,55,57,58,60,62,63,65,67,69,70,72,74,75,77,79,81,82,84,86,87,89,91,93,94,96,98,99,101,103,105,106,108,110,111,113,115,117,118,120,122,123,125,127}
+,{0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58,60,62,64,66,68,70,72,74,76,78,80,82,84,86,88,90,92,94,96,98,100,102,104,106,108,110,112,114,116,118,120,122,124,126}}; 
+
+
+//int strength[] = {0, 20, 40, 80, 127}; //mapping to select only few amount of velocities
+int midicontrol [] = {20, 40, 60, 80, 90};
+
+
 import processing.serial.*;
 import controlP5.*;
 import java.util.*;
@@ -59,6 +84,7 @@ void setup() {
   //Set up OSC:
   oscP5 = new OscP5(this, 9000); //This port isn't important (we're not receiving OSC)
   dest = new NetAddress("127.0.0.1", 6448); //Send to port 6448
+
   MidiBus.list(); // List all available Midi devices on STDOUT. This will show each device's index and name.
 
   // Either you can
@@ -118,8 +144,6 @@ void draw() {
   if (gettingData) {
     getData();
   }
-
-  //delay(1000);
 }
 
 //Parses serial data to get button & accel values, also buffers accels if we're in button-segmented mode
@@ -137,19 +161,37 @@ void getData() {
     numFeatures = a.length;
     sendFeatures(a);
 
-    int channel = 0;
-    int pitch = (int)Float.parseFloat(a[1]);
-    int velocity = (int)Float.parseFloat(a[2]);
 
-    myBus.sendNoteOn(channel, pitch, velocity); // Send a Midi noteOn
-    //delay(50);
-    myBus.sendNoteOff(channel, pitch, velocity); // Send a Midi nodeOff
-    int channel2 = 1;
-    int number = (int)Float.parseFloat(a[1]);
-    int value = (int)Float.parseFloat(a[2]);
+     if (Float.parseFloat(a[1])>15) {
+       pitch = (int)map(Float.parseFloat(a[1]), 0, 950, 0, 4);
+     } else {
+       pitch = 0;
+     }
 
-     myBus.sendControllerChange(channel2, number, value); // Send a controllerChange
+
+    if (Float.parseFloat(a[1])>15) {
+      velocity = 127; // (int)map(Float.parseFloat(a[2]), 0, 950, 0, 4);
+    } else {
+      velocity = 0;
+    }
+  
+
+
+  myBus.sendNoteOn(channel, notes[pitch], velocity); // Send a Midi noteOn
+  delay(200);
+  //myBus.sendNoteOff(channel, pitch, velocity); // Send a Midi nodeOff
+
+
+  if (Float.parseFloat(a[2])>15) {
+    value = (int)map(Float.parseFloat(a[2]), 0, 950, 0, 4);
+  } else {
+    value = 0;
   }
+
+
+  myBus.sendControllerChange(channel, number, midicontrol [value]); // Send a controllerChange
+  //delay(2000);
+}
 }
 
 void sendFeatures(String[] s) {
@@ -168,38 +210,3 @@ void sendFeatures(String[] s) {
     println("Encountered exception parsing string: " + ex);
   }
 }
-
-void noteOn(int channel, int pitch, int velocity) {
-  // Receive a noteOn
-  println();
-  println("Note On:");
-  println("--------");
-  println("Channel:"+channel);
-  println("Pitch:"+pitch);
-  println("Velocity:"+velocity);
-}
-
-void noteOff(int channel, int pitch, int velocity) {
-  // Receive a noteOff
-  println();
-  println("Note Off:");
-  println("--------");
-  println("Channel:"+channel);
-  println("Pitch:"+pitch);
-  println("Velocity:"+velocity);
-}
-
-void controllerChange(int channel, int number, int value) {
-  // Receive a controllerChange
-  println();
-  println("Controller Change:");
-  println("--------");
-  println("Channel:"+channel);
-  println("Number:"+number);
-  println("Value:"+value);
-}
-
-//void delay(int time) {
-//  int current = millis();
-//  while (millis () < current+time) Thread.yield();
-//}
