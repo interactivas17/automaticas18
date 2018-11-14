@@ -162,8 +162,8 @@ void getData() {
     sendFeatures(a);
 
 
-     if (Float.parseFloat(a[1])>15) {
-       pitch = (int)map(Float.parseFloat(a[1]), 0, 950, 0, 4);
+     if (Float.parseFloat(a[4])>15) {
+       pitch = (int)map(Float.parseFloat(a[4]), 0, 950, 0, 50);
      } else {
        pitch = 0;
      }
@@ -177,7 +177,7 @@ void getData() {
   
 
 
-  myBus.sendNoteOn(channel, notes[pitch], velocity); // Send a Midi noteOn
+  myBus.sendNoteOn(channel, notes[3][pitch], velocity); // Send a Midi noteOn
   delay(200);
   //myBus.sendNoteOff(channel, pitch, velocity); // Send a Midi nodeOff
 
