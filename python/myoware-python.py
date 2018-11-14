@@ -1,5 +1,6 @@
 import argparse
 import random
+import numpy as np
 
 from pythonosc import osc_message_builder
 from pythonosc import udp_client
@@ -21,6 +22,25 @@ client = udp_client.SimpleUDPClient(args.ip, args.port)
 #portname = "/dev/tty.usbmodemFA131"
 portname = "/dev/tty.HC-05-DevB"
 brate = 9600
+
+class Datos():
+    # numpy array de dos dimensiones: cada fila representa los datos de un sensor
+    # el primer elemento de cada fila será el valor directo del sensor
+    def __init__(self, s, f):
+        # self data contendrá el numpy
+        self.s = s # numero de sensores
+        self.num_features = f # numero de datos (features) por sensor
+        self.data = np.zeros([s,f])
+
+    def update(self,sensor,index,value):
+        # funcion para actualizar 
+        # input - dos indices para indicar donde se escribe el dato (sensor,data_index)  + dato
+        self.data[sensor,index] = value
+    def get_data(self,sensor,index):
+        return self.data[sensor,index]
+    def get_all_data(self):
+        return self.data
+
 
 # define a generator to read the serial data
 def serial_data(port, baudrate):
