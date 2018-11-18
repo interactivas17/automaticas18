@@ -1,10 +1,14 @@
 import argparse
 import numpy as np
+import neurokit as nk
+import pandas as pd
+import seaborn as sns
 
 from pythonosc import osc_message_builder
 from pythonosc import udp_client
 
-import serial, time, queue
+import time, queue, csv
+import serial
 
 class Datos:
     # numpy array de dos dimensiones: cada fila representa los datos de un sensor
@@ -44,8 +48,8 @@ def serial_data(port, baudrate):
 portname = "/dev/tty.usbmodemFA131"
 # portname = "/dev/tty.HC-05-DevB"
 brate = 9600
+sensor_names = ['sensor1', 'sensor2', 'sensor3']
 num_sen = 3
-nSamples = 1
 
 # initialize queues for each sensor and set the epoch size
 epoch_size = 10
@@ -58,6 +62,14 @@ num_features = 5
 # inicializar los datos que se enviaran al midi
 midi_data = Datos(num_sen, num_features)
 
+# All the data will be saved in a CVS file
+filename = 'data_session_{}.csv'.format(time.strftime("%Y_%m_%d-%H_%M"))
+# set this value to False if you don't want to record the session data, set to True otherwise
+save_data = True
+with open(filename, 'a') as f:
+    writer = csv.writer(f)
+    writer.writerow(sensor_names)
+
 # set OSC client
 parser = argparse.ArgumentParser()
 parser.add_argument("--ip", default="127.0.0.1", help="The ip of the OSC server")
@@ -65,7 +77,6 @@ parser.add_argument("--port", type=int, default=5005, help="The port the OSC ser
 args = parser.parse_args()
 
 client = udp_client.SimpleUDPClient(args.ip, args.port)
-
 
 for line in serial_data(portname, brate):
     # the epoch corresponding to each sensor will be stored separately in a list called channels
@@ -81,6 +92,11 @@ for line in serial_data(portname, brate):
     if len(sensor_values) < len(queue_list):
         continue
     else:
+        if save_data:
+            # write sensor values to a CVS file
+            with open(filename, 'a') as f:
+                writer = csv.writer(f)
+                writer.writerow(sensor_values)
         # initialize a counter to iterate over the sensors
         i = 0
         for q in queue_list:   

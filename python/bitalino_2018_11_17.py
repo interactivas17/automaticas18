@@ -1,10 +1,13 @@
 import argparse
 import numpy as np
+import neurokit as nk
+import pandas as pd
+import seaborn as sns
 
 from pythonosc import osc_message_builder
 from pythonosc import udp_client
 
-import time, queue
+import time, queue, cvs
 from bitalino import BITalino
 
 class Datos:
@@ -47,6 +50,7 @@ macAddress = "/dev/tty.bitalino-DevB"
     
 batteryThreshold = 30
 acqChannels = [4]
+sensor_names = ['ACC']
 num_sen = len(acqChannels)
 samplingRate = 100
 nSamples = 1
@@ -61,6 +65,15 @@ for s in range(num_sen):
 num_features = 5
 # inicializar los datos que se enviaran al midi
 midi_data = Datos(num_sen, num_features)
+
+# All the data will be saved in a CVS file
+filename = 'data_session_{}.csv'.format(time.strftime("%Y_%m_%d-%H_%M"))
+# set this value to False if you don't want to record the session data, set to True otherwise
+save_data = True
+if save_data:
+    with open(filename, 'a') as f:
+        writer = csv.writer(f)
+        writer.writerow(sensor_names)
 
 # set OSC client
 parser = argparse.ArgumentParser()
@@ -79,6 +92,11 @@ for line in serial_data(macAddress, batteryThreshold, samplingRate, acqChannels,
     if len(sensor_values) < len(queue_list):
         continue
     else:
+        if save_data:
+            # write sensor values to a CVS file
+            with open(filename, 'a') as f:
+                writer = csv.writer(f)
+                writer.writerow(sensor_values)
         # initialize a counter to iterate over the sensors
         i = 0
         for q in queue_list:   
