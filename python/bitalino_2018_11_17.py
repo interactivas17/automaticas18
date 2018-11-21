@@ -7,8 +7,8 @@ import seaborn as sns
 from pythonosc import osc_message_builder
 from pythonosc import udp_client
 
-import time, queue, csv
-import serial
+import time, queue, cvs
+from bitalino import BITalino
 
 class Datos:
     # numpy array de dos dimensiones: cada fila representa los datos de un sensor
@@ -28,28 +28,32 @@ class Datos:
     def get_all_data(self):
         return self.data
 
-# ## WARNING:
-# Be careful when using readline(). Do specify a timeout when opening the serial port otherwise 
-# it could block forever if no newline character is received. 
-# Also note that readlines() only works with a timeout. 
-# readlines() depends on having a timeout and interprets that as EOF (end of file). 
-# It raises an exception if the port is not opened correctly.
-
 # define a generator to read the serial data
-def serial_data(port, baudrate):
-    ser = serial.Serial(port, baudrate, timeout=5)
+def serial_data(macadd, batthr, samp_rate, acqCh, num_s ):
+    # Connect to BITalino
+    device = BITalino(macadd)
+    # Set battery threshold
+    device.battery(batthr)
+    # Start Acquisition
+    device.start(samp_rate, acqCh)
 
     while True:
-        yield ser.readline()
+        yield device.read(num_s)
 
-    ser.close()
+    # Stop acquisition
+    device.stop()        
+    # Close connection
+    device.close()
 
-# set port and baudrate
-portname = "/dev/tty.usbmodemFA131"
-# portname = "/dev/tty.HC-05-DevB"
-brate = 9600
-sensor_names = ['sensor1', 'sensor2', 'sensor3']
-num_sen = 3
+# set MAC address
+macAddress = "/dev/tty.bitalino-DevB"
+    
+batteryThreshold = 30
+acqChannels = [4]
+sensor_names = ['ACC']
+num_sen = len(acqChannels)
+samplingRate = 100
+nSamples = 1
 
 # initialize queues for each sensor and set the epoch size
 epoch_size = 10
@@ -66,9 +70,10 @@ midi_data = Datos(num_sen, num_features)
 filename = 'data_session_{}.csv'.format(time.strftime("%Y_%m_%d-%H_%M"))
 # set this value to False if you don't want to record the session data, set to True otherwise
 save_data = True
-with open(filename, 'a') as f:
-    writer = csv.writer(f)
-    writer.writerow(sensor_names)
+if save_data:
+    with open(filename, 'a') as f:
+        writer = csv.writer(f)
+        writer.writerow(sensor_names)
 
 # set OSC client
 parser = argparse.ArgumentParser()
@@ -78,17 +83,12 @@ args = parser.parse_args()
 
 client = udp_client.SimpleUDPClient(args.ip, args.port)
 
-for line in serial_data(portname, brate):
+for line in serial_data(macAddress, batteryThreshold, samplingRate, acqChannels, nSamples):
     # the epoch corresponding to each sensor will be stored separately in a list called channels
     channels = []
-    outmsg = []
-    # parse the serial data
-    val = line.strip()
-    values = val.decode('ascii')
-    values = values.split(',')
-    # store the serial data in an sensor_values
-    sensor_values = [float(s) for s in values if s]
-    # exclude all the values if the information of some sensor is missing
+    sensor_values = line[:,-num_sen:]
+
+    # exclude arrays if the information of some sensor is missing
     if len(sensor_values) < len(queue_list):
         continue
     else:
@@ -105,25 +105,23 @@ for line in serial_data(portname, brate):
                 channels.append(epoch)
                 # process epoch
                 suma = sum(epoch)
-                midi_data.update(i,1,suma)
-                print("El epoch es: {}".format(epoch))
-                print("La suma del epoch del sensor {} es: {}".format(i, suma))
+                # print("El epoch es: {}".format(epoch))
+                # print("La suma del epoch del sensor {} es: {}".format(i, suma))
                 # print("Los canales son:{}".format(channels))
                 # send the epoch of each sensor on a different osc channel
                 client.send_message("/sensor{}".format(i), suma) 
                 # TODO - hacer un bundle o algo asi, ver como enviar los tres epochs juntos
                 q.queue.clear()
                 q.put(sensor_values[i])
-                # colocamos el valor en crudo del sensor en la primera columna de midi_data
-                midi_data.update(i,0,sensor_values[i])                             
+                midi_data.update(i,0,sensor_values[i])
+                midi_data.update(i,1,suma)
+                # TODO - check sensor value format to correctly pile them in a new np.array
             else:
                 q.put(sensor_values[i])
-                # colocamos el valor en crudo del sensor en la primera columna de midi_data
-                midi_data.update(i,0,sensor_values[i]) 
+                midi_data.update(i,0,sensor_values[i])   
             i+=1
              
-    print("El valor del los sensores es: {}".format(sensor_values))
+    print("El valor de los sensores es: {}".format(sensor_values))
     print(midi_data.get_all_data())
     # print("La cola esta llena:{}".format(q.full()))    
     time.sleep(0.001)
-
