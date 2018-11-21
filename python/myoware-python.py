@@ -1,16 +1,29 @@
 import argparse
+import random
 import numpy as np
-import neurokit as nk
-import pandas as pd
-import seaborn as sns
 
 from pythonosc import osc_message_builder
 from pythonosc import udp_client
 
-import time, queue, csv
-import serial
+import serial, time, queue
 
-class Datos:
+# set OSC client
+parser = argparse.ArgumentParser()
+parser.add_argument("--ip", default="127.0.0.1", help="The ip of the OSC server")
+parser.add_argument("--port", type=int, default=5005, help="The port the OSC server is listening on")
+args = parser.parse_args()
+
+client = udp_client.SimpleUDPClient(args.ip, args.port)
+
+# ## WARNING:
+# Be careful when using readline(). Do specify a timeout when opening the serial port otherwise it could block forever if no newline character is received. Also note that readlines() only works with a timeout. readlines() depends on having a timeout and interprets that as EOF (end of file). It raises an exception if the port is not opened correctly.
+
+# set port and baudrate
+#portname = "/dev/tty.usbmodemFA131"
+portname = "/dev/tty.HC-05-DevB"
+brate = 9600
+
+class Datos():
     # numpy array de dos dimensiones: cada fila representa los datos de un sensor
     # el primer elemento de cada fila será el valor directo del sensor
     def __init__(self, s, f):
@@ -28,12 +41,6 @@ class Datos:
     def get_all_data(self):
         return self.data
 
-# ## WARNING:
-# Be careful when using readline(). Do specify a timeout when opening the serial port otherwise 
-# it could block forever if no newline character is received. 
-# Also note that readlines() only works with a timeout. 
-# readlines() depends on having a timeout and interprets that as EOF (end of file). 
-# It raises an exception if the port is not opened correctly.
 
 # define a generator to read the serial data
 def serial_data(port, baudrate):
@@ -44,39 +51,13 @@ def serial_data(port, baudrate):
 
     ser.close()
 
-# set port and baudrate
-portname = "/dev/tty.usbmodemFA131"
-# portname = "/dev/tty.HC-05-DevB"
-brate = 9600
-sensor_names = ['sensor1', 'sensor2', 'sensor3']
-num_sen = 3
-
 # initialize queues for each sensor and set the epoch size
-epoch_size = 10
-queue_list = []
-for s in range(num_sen):
-    queue_list.append(queue.Queue(maxsize=epoch_size))
+epoch_size = 2
+q1 = queue.Queue(maxsize=epoch_size)
+q2 = queue.Queue(maxsize=epoch_size)
+q3 = queue.Queue(maxsize=epoch_size)
+queue_list = [q1,q2,q3]
 
-# numero de datos que se van a extraer de cada sensor
-num_features = 5
-# inicializar los datos que se enviaran al midi
-midi_data = Datos(num_sen, num_features)
-
-# All the data will be saved in a CVS file
-filename = 'data_session_{}.csv'.format(time.strftime("%Y_%m_%d-%H_%M"))
-# set this value to False if you don't want to record the session data, set to True otherwise
-save_data = True
-with open(filename, 'a') as f:
-    writer = csv.writer(f)
-    writer.writerow(sensor_names)
-
-# set OSC client
-parser = argparse.ArgumentParser()
-parser.add_argument("--ip", default="127.0.0.1", help="The ip of the OSC server")
-parser.add_argument("--port", type=int, default=5005, help="The port the OSC server is listening on")
-args = parser.parse_args()
-
-client = udp_client.SimpleUDPClient(args.ip, args.port)
 
 for line in serial_data(portname, brate):
     # the epoch corresponding to each sensor will be stored separately in a list called channels
@@ -86,17 +67,12 @@ for line in serial_data(portname, brate):
     val = line.strip()
     values = val.decode('ascii')
     values = values.split(',')
-    # store the serial data in an sensor_values
-    sensor_values = [float(s) for s in values if s]
-    # exclude all the values if the information of some sensor is missing
-    if len(sensor_values) < len(queue_list):
+    # store the serial data in an array
+    array = [float(s) for s in values if s]
+    # exclude arrays if the information of some sensor is missing
+    if len(array) < len(queue_list):
         continue
     else:
-        if save_data:
-            # write sensor values to a CVS file
-            with open(filename, 'a') as f:
-                writer = csv.writer(f)
-                writer.writerow(sensor_values)
         # initialize a counter to iterate over the sensors
         i = 0
         for q in queue_list:   
@@ -105,25 +81,19 @@ for line in serial_data(portname, brate):
                 channels.append(epoch)
                 # process epoch
                 suma = sum(epoch)
-                midi_data.update(i,1,suma)
                 print("El epoch es: {}".format(epoch))
                 print("La suma del epoch del sensor {} es: {}".format(i, suma))
                 # print("Los canales son:{}".format(channels))
                 # send the epoch of each sensor on a different osc channel
-                client.send_message("/sensor{}".format(i), suma) 
                 # TODO - hacer un bundle o algo asi, ver como enviar los tres epochs juntos
+                client.send_message("/sensor{}".format(i), suma) 
                 q.queue.clear()
-                q.put(sensor_values[i])
-                # colocamos el valor en crudo del sensor en la primera columna de midi_data
-                midi_data.update(i,0,sensor_values[i])                             
+                q.put(array[i])            
             else:
-                q.put(sensor_values[i])
-                # colocamos el valor en crudo del sensor en la primera columna de midi_data
-                midi_data.update(i,0,sensor_values[i]) 
+                q.put(array[i])
             i+=1
              
-    print("El valor del los sensores es: {}".format(sensor_values))
-    print(midi_data.get_all_data())
+    print("El valor del los sensores es: {}".format(array))
     # print("La cola esta llena:{}".format(q.full()))    
     time.sleep(0.001)
 
