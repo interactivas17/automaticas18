@@ -63,17 +63,19 @@ num_features = 5
 midi_data = Datos(num_sen, num_features)
 
 # All the data will be saved in a CVS file
-filename = 'data_session_{}.csv'.format(time.strftime("%Y_%m_%d-%H_%M"))
+filename = 'myoware_data_session_{}.csv'.format(time.strftime("%Y_%m_%d-%H_%M"))
 # set this value to False if you don't want to record the session data, set to True otherwise
-save_data = True
+save_data = False
 with open(filename, 'a') as f:
     writer = csv.writer(f)
     writer.writerow(sensor_names)
 
 # set OSC client
 parser = argparse.ArgumentParser()
-parser.add_argument("--ip", default="127.0.0.1", help="The ip of the OSC server")
-parser.add_argument("--port", type=int, default=5005, help="The port the OSC server is listening on")
+# parser.add_argument("--ip", default="127.0.0.1", help="The ip of the OSC server")
+# parser.add_argument("--port", type=int, default=5005, help="The port the OSC server is listening on")
+parser.add_argument("--ip", default="192.168.1.104", help="The ip of the OSC server")
+parser.add_argument("--port", type=int, default=12000, help="The port the OSC server is listening on")
 args = parser.parse_args()
 
 client = udp_client.SimpleUDPClient(args.ip, args.port)
@@ -88,6 +90,8 @@ for line in serial_data(portname, brate):
     values = values.split(',')
     # store the serial data in an sensor_values
     sensor_values = [float(s) for s in values if s]
+    # convert sensor_values to a numpy array
+    sensor_values = np.array(sensor_values)
     # exclude all the values if the information of some sensor is missing
     if len(sensor_values) < len(queue_list):
         continue
@@ -110,7 +114,7 @@ for line in serial_data(portname, brate):
                 print("La suma del epoch del sensor {} es: {}".format(i, suma))
                 # print("Los canales son:{}".format(channels))
                 # send the epoch of each sensor on a different osc channel
-                client.send_message("/sensor{}".format(i), suma) 
+                # client.send_message("/sensor{}".format(i), suma) 
                 # TODO - hacer un bundle o algo asi, ver como enviar los tres epochs juntos
                 q.queue.clear()
                 q.put(sensor_values[i])
@@ -120,10 +124,13 @@ for line in serial_data(portname, brate):
                 q.put(sensor_values[i])
                 # colocamos el valor en crudo del sensor en la primera columna de midi_data
                 midi_data.update(i,0,sensor_values[i]) 
-            i+=1
-             
+            i+=1            
+    # convert the sensor values to a string to send them as an OSC message
+    sensor_value_str = str(sensor_values)
+    sensor_value_OSCmsg = sensor_value_str.strip('[]')
+    client.send_message("/sensores", sensor_value_OSCmsg)      
     print("El valor del los sensores es: {}".format(sensor_values))
     print(midi_data.get_all_data())
     # print("La cola esta llena:{}".format(q.full()))    
-    time.sleep(0.001)
+    # time.sleep(0.001)
 

@@ -7,7 +7,7 @@ import seaborn as sns
 from pythonosc import osc_message_builder
 from pythonosc import udp_client
 
-import time, queue, cvs
+import time, queue, csv
 from bitalino import BITalino
 
 class Datos:
@@ -50,7 +50,7 @@ macAddress = "/dev/tty.bitalino-DevB"
     
 batteryThreshold = 30
 acqChannels = [4]
-sensor_names = ['ACC']
+sensor_names = ['EMG']
 num_sen = len(acqChannels)
 samplingRate = 100
 nSamples = 1
@@ -67,9 +67,9 @@ num_features = 5
 midi_data = Datos(num_sen, num_features)
 
 # All the data will be saved in a CVS file
-filename = 'data_session_{}.csv'.format(time.strftime("%Y_%m_%d-%H_%M"))
-# set this value to False if you don't want to record the session data, set to True otherwise
-save_data = True
+filename = 'bitalino_{}_data_session_{}.csv'.format(sensor_names[0],time.strftime("%Y_%m_%d-%H_%M"))
+# IMPORTANT!: set this value to False if you don't want to record the session data, set to True otherwise
+save_data = False
 if save_data:
     with open(filename, 'a') as f:
         writer = csv.writer(f)
@@ -77,8 +77,10 @@ if save_data:
 
 # set OSC client
 parser = argparse.ArgumentParser()
-parser.add_argument("--ip", default="127.0.0.1", help="The ip of the OSC server")
-parser.add_argument("--port", type=int, default=5005, help="The port the OSC server is listening on")
+parser.add_argument("--ip", default="192.168.1.104", help="The ip of the OSC server")
+parser.add_argument("--port", type=int, default=12000, help="The port the OSC server is listening on")
+# parser.add_argument("--ip", default="192.168.1.104", help="The ip of the OSC server")
+# parser.add_argument("--port", type=int, default=12000, help="The port the OSC server is listening on")
 args = parser.parse_args()
 
 client = udp_client.SimpleUDPClient(args.ip, args.port)
@@ -86,7 +88,9 @@ client = udp_client.SimpleUDPClient(args.ip, args.port)
 for line in serial_data(macAddress, batteryThreshold, samplingRate, acqChannels, nSamples):
     # the epoch corresponding to each sensor will be stored separately in a list called channels
     channels = []
+    # extract the sensor raw value from the data that comes out of Bitalino
     sensor_values = line[:,-num_sen:]
+    sensor_values = sensor_values[0]
 
     # exclude arrays if the information of some sensor is missing
     if len(sensor_values) < len(queue_list):
@@ -120,8 +124,11 @@ for line in serial_data(macAddress, batteryThreshold, samplingRate, acqChannels,
                 q.put(sensor_values[i])
                 midi_data.update(i,0,sensor_values[i])   
             i+=1
-             
+    # convert the sensor values to a string to send them as an OSC message
+    sensor_value_str = str(sensor_values)
+    sensor_value_OSCmsg = sensor_value_str.strip('[]')
+    client.send_message("/sensores", sensor_value_OSCmsg)
     print("El valor de los sensores es: {}".format(sensor_values))
     print(midi_data.get_all_data())
     # print("La cola esta llena:{}".format(q.full()))    
-    time.sleep(0.001)
+    # time.sleep(0.001)
