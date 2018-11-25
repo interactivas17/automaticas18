@@ -81,8 +81,6 @@ args = parser.parse_args()
 client = udp_client.SimpleUDPClient(args.ip, args.port)
 
 for line in serial_data(portname, brate):
-    # the epoch corresponding to each sensor will be stored separately in a list called channels
-    channels = []
     outmsg = []
     # parse the serial data
     val = line.strip()
@@ -105,8 +103,7 @@ for line in serial_data(portname, brate):
         i = 0
         for q in queue_list:   
             if q.full():
-                epoch = list(q.queue)
-                channels.append(epoch)
+                epoch = np.array(q.queue)
                 # process epoch
                 suma = sum(epoch)
                 midi_data.update(i,1,suma)

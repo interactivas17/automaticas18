@@ -86,8 +86,6 @@ args = parser.parse_args()
 client = udp_client.SimpleUDPClient(args.ip, args.port)
 
 for line in serial_data(macAddress, batteryThreshold, samplingRate, acqChannels, nSamples):
-    # the epoch corresponding to each sensor will be stored separately in a list called channels
-    channels = []
     # extract the sensor raw value from the data that comes out of Bitalino
     sensor_values = line[:,-num_sen:]
     sensor_values = sensor_values[0]
@@ -105,8 +103,7 @@ for line in serial_data(macAddress, batteryThreshold, samplingRate, acqChannels,
         i = 0
         for q in queue_list:   
             if q.full():
-                epoch = list(q.queue)
-                channels.append(epoch)
+                epoch = np.array(q.queue)
                 # process epoch
                 suma = sum(epoch)
                 q.queue.clear()
