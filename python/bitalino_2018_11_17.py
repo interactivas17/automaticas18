@@ -49,8 +49,8 @@ def serial_data(macadd, batthr, samp_rate, acqCh, num_s ):
 macAddress = "/dev/tty.bitalino-DevB"
     
 batteryThreshold = 30
-acqChannels = [4]
-sensor_names = ['EMG']
+acqChannels = [4,5]
+sensor_names = ['EMG','ECG']
 num_sen = len(acqChannels)
 samplingRate = 100
 nSamples = 1
@@ -77,10 +77,10 @@ if save_data:
 
 # set OSC client
 parser = argparse.ArgumentParser()
-parser.add_argument("--ip", default="192.168.1.104", help="The ip of the OSC server")
-parser.add_argument("--port", type=int, default=12000, help="The port the OSC server is listening on")
 # parser.add_argument("--ip", default="192.168.1.104", help="The ip of the OSC server")
 # parser.add_argument("--port", type=int, default=12000, help="The port the OSC server is listening on")
+parser.add_argument("--ip", default="127.0.0.1", help="The ip of the OSC server")
+parser.add_argument("--port", type=int, default=5005, help="The port the OSC server is listening on")
 args = parser.parse_args()
 
 client = udp_client.SimpleUDPClient(args.ip, args.port)
@@ -109,17 +109,10 @@ for line in serial_data(macAddress, batteryThreshold, samplingRate, acqChannels,
                 channels.append(epoch)
                 # process epoch
                 suma = sum(epoch)
-                # print("El epoch es: {}".format(epoch))
-                # print("La suma del epoch del sensor {} es: {}".format(i, suma))
-                # print("Los canales son:{}".format(channels))
-                # send the epoch of each sensor on a different osc channel
-                client.send_message("/sensor{}".format(i), suma) 
-                # TODO - hacer un bundle o algo asi, ver como enviar los tres epochs juntos
                 q.queue.clear()
                 q.put(sensor_values[i])
                 midi_data.update(i,0,sensor_values[i])
                 midi_data.update(i,1,suma)
-                # TODO - check sensor value format to correctly pile them in a new np.array
             else:
                 q.put(sensor_values[i])
                 midi_data.update(i,0,sensor_values[i])   
@@ -129,6 +122,5 @@ for line in serial_data(macAddress, batteryThreshold, samplingRate, acqChannels,
     sensor_value_OSCmsg = sensor_value_str.strip('[]')
     client.send_message("/sensores", sensor_value_OSCmsg)
     print("El valor de los sensores es: {}".format(sensor_values))
-    print(midi_data.get_all_data())
-    # print("La cola esta llena:{}".format(q.full()))    
+    print(midi_data.get_all_data())   
     # time.sleep(0.001)

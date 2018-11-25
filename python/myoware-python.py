@@ -111,11 +111,6 @@ for line in serial_data(portname, brate):
                 suma = sum(epoch)
                 midi_data.update(i,1,suma)
                 print("El epoch es: {}".format(epoch))
-                print("La suma del epoch del sensor {} es: {}".format(i, suma))
-                # print("Los canales son:{}".format(channels))
-                # send the epoch of each sensor on a different osc channel
-                # client.send_message("/sensor{}".format(i), suma) 
-                # TODO - hacer un bundle o algo asi, ver como enviar los tres epochs juntos
                 q.queue.clear()
                 q.put(sensor_values[i])
                 # colocamos el valor en crudo del sensor en la primera columna de midi_data
@@ -130,7 +125,6 @@ for line in serial_data(portname, brate):
     sensor_value_OSCmsg = sensor_value_str.strip('[]')
     client.send_message("/sensores", sensor_value_OSCmsg)      
     print("El valor del los sensores es: {}".format(sensor_values))
-    print(midi_data.get_all_data())
-    # print("La cola esta llena:{}".format(q.full()))    
+    print(midi_data.get_all_data()) 
     # time.sleep(0.001)
 
