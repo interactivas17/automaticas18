@@ -46,11 +46,11 @@ def serial_data(macadd, batthr, samp_rate, acqCh, num_s ):
     device.close()
 
 # set MAC address
-macAddress = "/dev/tty.bitalino-DevB"
+macAddress = "98:D3:31:30:54:CA"
     
 batteryThreshold = 30
-acqChannels = [4,5]
-sensor_names = ['EMG','ECG']
+acqChannels = [4]
+sensor_names = ['ECG']
 num_sen = len(acqChannels)
 samplingRate = 100
 nSamples = 1
@@ -69,7 +69,7 @@ midi_data = Datos(num_sen, num_features)
 # All the data will be saved in a CVS file
 filename = 'bitalino_{}_data_session_{}.csv'.format(sensor_names[0],time.strftime("%Y_%m_%d-%H_%M"))
 # IMPORTANT!: set this value to False if you don't want to record the session data, set to True otherwise
-save_data = False
+save_data = True
 if save_data:
     with open(filename, 'a') as f:
         writer = csv.writer(f)
