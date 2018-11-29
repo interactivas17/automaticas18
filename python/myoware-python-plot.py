@@ -3,6 +3,7 @@ import numpy as np
 import neurokit as nk
 import pandas as pd
 import seaborn as sns
+import matplotlib.pyplot as plt
 
 from pythonosc import osc_message_builder
 from pythonosc import udp_client
@@ -66,7 +67,7 @@ midi_data = Datos(num_sen, num_features)
 # All the data will be saved in a CVS file
 filename = 'myoware_data_session_{}.csv'.format(time.strftime("%Y_%m_%d-%H_%M"))
 # set this value to False if you don't want to record the session data, set to True otherwise
-save_data = True
+save_data = False
 with open(filename, 'a') as f:
     writer = csv.writer(f)
     writer.writerow(sensor_names)
@@ -121,8 +122,12 @@ for line in serial_data(portname, brate):
     # convert the sensor values to a string to send them as an OSC message
     #sensor_value_str = str(sensor_values)
     #sensor_value_OSCmsg = sensor_value_str.strip('[]')
+    now = time.time() % 60
+    nowArray = [now, now, now, now, now, now, now, now]
     client.send_message("/wek/inputs", sensor_values)      
     print("El valor del los sensores es: {}".format(sensor_values))
     print(midi_data.get_all_data()) 
+    plt.scatter(nowArray, sensor_values)
+    plt.show()
     # time.sleep(0.001)
 
