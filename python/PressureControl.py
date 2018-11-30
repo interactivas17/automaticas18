@@ -2,25 +2,57 @@ import mido
 import time
 import random
 import numpy
+import argparse
+import math
+
+from pythonosc import dispatcher
+from pythonosc import osc_server
+
+def print_volume_handler(unused_addr, args, volume):
+  print("[{0}] ~ {1}".format(args[0], volume))
+
+def print_compute_handler(unused_addr, args, volume):
+  try:
+    print("[{0}] ~ {1}".format(args[0], args[1](volume)))
+  except ValueError: pass
+
+if __name__ == "__main__":
+  parser = argparse.ArgumentParser()
+  parser.add_argument("--ip",
+      default="127.0.0.1", help="The ip to listen on")
+  parser.add_argument("--port",
+      type=int, default=1234, help="The port to listen on")
+  args = parser.parse_args()
+
+  dispatcher = dispatcher.Dispatcher()
+  dispatcher.map("/vitalin/status", print)
+  # dispatcher.map("/sensores", print)
+  # dispatcher.map("/volume", print_volume_handler, "Volume")
+  # dispatcher.map("/logvolume", print_compute_handler, "Log volume", math.log)
+
+  server = osc_server.ThreadingOSCUDPServer(
+      (args.ip, args.port), dispatcher)
+  print("Serving on {}".format(server.server_address))
+  server.serve_forever()
 
 
-class Datos:
-    # numpy array de dos dimensiones: cada fila representa los datos de un sensor
-    # el primer elemento de cada fila será el valor directo del sensor
-    def __init__(self, s, f):
-        # self data contendrá el numpy
-        self.s = s # numero de sensores
-        self.num_features = f # numero de datos (features) por sensor
-        self.data = np.zeros([s,f])
+# class Datos:
+#     # numpy array de dos dimensiones: cada fila representa los datos de un sensor
+#     # el primer elemento de cada fila será el valor directo del sensor
+#     def __init__(self, s, f):
+#         # self data contendrá el numpy
+#         self.s = s # numero de sensores
+#         self.num_features = f # numero de datos (features) por sensor
+#         self.data = np.zeros([s,f])
 
-    def update(self,sensor,index,value):
-        # funcion para actualizar 
-        # input - dos indices para indicar donde se escribe el dato (sensor,data_index)  + dato
-        self.data[sensor,index] = value
-    def get_data(self,sensor,index):
-        return self.data[sensor,index]
-    def get_all_data(self):
-        return self.data
+#     def update(self,sensor,index,value):
+#         # funcion para actualizar 
+#         # input - dos indices para indicar donde se escribe el dato (sensor,data_index)  + dato
+#         self.data[sensor,index] = value
+#     def get_data(self,sensor,index):
+#         return self.data[sensor,index]
+#     def get_all_data(self):
+#         return self.data
 
 
 # SENSORES

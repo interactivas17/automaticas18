@@ -19,5 +19,5 @@ args = parser.parse_args()
 client = udp_client.SimpleUDPClient(args.ip, args.port)
 
 for x in range(100):
-    client.send_message("/filter", x)
+    client.send_message("/volume", x)
     time.sleep(1)
