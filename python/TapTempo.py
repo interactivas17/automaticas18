@@ -1,6 +1,7 @@
 import mido
 import time
- 
+import numpy as np
+
 class Datos:
     # numpy array de dos dimensiones: cada fila representa los datos de un sensor
     # el primer elemento de cada fila será el valor directo del sensor
@@ -11,7 +12,7 @@ class Datos:
         self.data = np.zeros([s,f])
 
     def update(self,sensor,index,value):
-        # funcion para actualizar 
+        # funcion para actualizar
         # input - dos indices para indicar donde se escribe el dato (sensor,data_index)  + dato
         self.data[sensor,index] = value
     def get_data(self,sensor,index):
