@@ -3,7 +3,10 @@ import numpy as np
 import neurokit as nk
 import pandas as pd
 import seaborn as sns
-import matplotlib.pyplot as plt
+
+# esta es para la animacion
+
+
 
 from pythonosc import osc_message_builder
 from pythonosc import udp_client
@@ -44,6 +47,9 @@ def serial_data(port, baudrate):
         yield ser.readline()
 
     ser.close()
+
+# esta es la parte para visualizar la señal
+
 
 # set port and baudrate
 #portname = "/dev/tty.usbmodemFA131"
@@ -122,12 +128,14 @@ for line in serial_data(portname, brate):
     # convert the sensor values to a string to send them as an OSC message
     #sensor_value_str = str(sensor_values)
     #sensor_value_OSCmsg = sensor_value_str.strip('[]')
-    now = time.time() % 60
-    nowArray = [now, now, now, now, now, now, now, now]
+    #now = time.time() % 60
+    #nowArray = [now, now, now, now, now, now, now, now]
     client.send_message("/wek/inputs", sensor_values)      
     print("El valor del los sensores es: {}".format(sensor_values))
     print(midi_data.get_all_data()) 
-    plt.scatter(nowArray, sensor_values)
-    plt.show()
+    
+
+    #plt.scatter(nowArray, sensor_values)
+    #plt.show()
     # time.sleep(0.001)
 
