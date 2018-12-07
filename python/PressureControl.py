@@ -35,26 +35,6 @@ if __name__ == "__main__":
   print("Serving on {}".format(server.server_address))
   server.serve_forever()
 
-
-# class Datos:
-#     # numpy array de dos dimensiones: cada fila representa los datos de un sensor
-#     # el primer elemento de cada fila será el valor directo del sensor
-#     def __init__(self, s, f):
-#         # self data contendrá el numpy
-#         self.s = s # numero de sensores
-#         self.num_features = f # numero de datos (features) por sensor
-#         self.data = np.zeros([s,f])
-
-#     def update(self,sensor,index,value):
-#         # funcion para actualizar 
-#         # input - dos indices para indicar donde se escribe el dato (sensor,data_index)  + dato
-#         self.data[sensor,index] = value
-#     def get_data(self,sensor,index):
-#         return self.data[sensor,index]
-#     def get_all_data(self):
-#         return self.data
-
-
 # SENSORES
 s = 8 # Numero de sensores
 f = 8 # Numero de datos por sensor

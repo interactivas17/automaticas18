@@ -1,7 +1,7 @@
 import mido
 import time
 import random
-import numpy
+import numpy as np
 
 
 class Datos:
@@ -78,21 +78,24 @@ midiOUT = mido.open_output('Driver IAC Bus IAC 1')
 
 
 
-# TEST CONTROL CHANGE
-# while True:
-# 	msg = mido.Message('control_change', channel=0 ,control=0, value=x)
-# 	print(x)
-# 	midiOUT.send(msg)
+#TEST CONTROL CHANGE
+while True:
+	msg = mido.Message('control_change', channel=0 ,control=0, value=x) #elevation
+	time.sleep(0.01)
+	msg2 = mido.Message('control_change', channel=1 ,control=1, value=x)	#azimuth
+	print(x)
+	midiOUT.send(msg)
+	midiOUT.send(msg2)
 	
-# 	if a == 0:
-# 		x+=1
-# 	else:
-# 		x-=1
-# 	if x == 127:
-# 		a = 1
-# 	elif x == 0:
-# 		a = 0
-# 	time.sleep(0.100)
+	if a == 0:
+		x+=1
+	else:
+		x-=1
+	if x == 127:
+		a = 1
+	elif x == 0:
+		a = 0
+	time.sleep(0.100)
 
 	
 
