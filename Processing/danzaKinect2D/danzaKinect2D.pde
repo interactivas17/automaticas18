@@ -22,7 +22,7 @@ NetAddress dest2;
 // data to send to wekinator
 FloatList wings;
 
-int numBones = 4;
+int numBones = 6;
 
 PVector[] usedBones = new PVector[numBones];
 
@@ -94,20 +94,47 @@ void draw()
     {
       stroke(userClr[ (userList[i] - 1) % userClr.length ] );
       drawSkeleton(userList[i]);
+
+
       context.getJointPositionSkeleton(userList[0], SimpleOpenNI.SKEL_LEFT_HAND, usedBones[0]);
       context.getJointPositionSkeleton(userList[0], SimpleOpenNI.SKEL_RIGHT_HAND, usedBones[1]);
       context.getJointPositionSkeleton(userList[0], SimpleOpenNI.SKEL_LEFT_HIP, usedBones[2]);
       context.getJointPositionSkeleton(userList[0], SimpleOpenNI.SKEL_RIGHT_HIP, usedBones[3]);
+      context.getJointPositionSkeleton(userList[0], SimpleOpenNI.SKEL_HEAD, usedBones[4]);
+      context.getJointPositionSkeleton(userList[0], SimpleOpenNI.SKEL_TORSO, usedBones[5]);
 
       float distHand = PVector.dist(usedBones[0], usedBones[1]);
       float angleLeft = PVector.angleBetween(usedBones[0], usedBones[2]);
       float angleRigth = PVector.angleBetween(usedBones[1], usedBones[3]);
-      sendOsc(distHand, degrees(angleLeft), degrees(angleRigth));
+      float angleBody = PVector.angleBetween(usedBones[4], usedBones[5]);
+
+      /*
+      context.getJointPositionSkeleton(userList[1], SimpleOpenNI.SKEL_LEFT_HAND, usedBones[6]);
+       context.getJointPositionSkeleton(userList[1], SimpleOpenNI.SKEL_RIGHT_HAND, usedBones[7]);
+       context.getJointPositionSkeleton(userList[1], SimpleOpenNI.SKEL_LEFT_HIP, usedBones[8]);
+       context.getJointPositionSkeleton(userList[1], SimpleOpenNI.SKEL_RIGHT_HIP, usedBones[9]);
+       context.getJointPositionSkeleton(userList[1], SimpleOpenNI.SKEL_HEAD, usedBones[10]);
+       context.getJointPositionSkeleton(userList[1], SimpleOpenNI.SKEL_TORSO, usedBones[11]);
+       
+       
+       
+       float distHand2 = PVector.dist(usedBones[0], usedBones[1]);
+       float angleLeft2 = PVector.angleBetween(usedBones[0], usedBones[2]);
+       float angleRigth2 = PVector.angleBetween(usedBones[1], usedBones[3]);
+       float angleBody2 = PVector.angleBetween(usedBones[4], usedBones[5]);
+       
+       float distHandR = (distHand + distHand2) / 2;
+       float angleLeftR = (distHand + distHand2) / 2;
+       float angleRigtR = (distHand + distHand2) / 2;
+       float angleBodyR = (distHand + distHand2) / 2;
+       */
+
+      sendOsc(distHand, degrees(angleLeft), degrees(angleRigth), degrees(angleBody));
 
       // wings.append(distHand);
       // wings.append(angleLeft);
       // wings.append(angleRigth);
-      println(distHand, degrees(angleLeft), degrees(angleRigth));
+      println(distHand, degrees(angleLeft), degrees(angleRigth), degrees(angleBody));
       //println(wings.get(0));
     }      
 
@@ -131,7 +158,7 @@ void draw()
   }
 }
 
-void sendOsc(float _dist, float _angleLeft, float _angleRigth) {
+void sendOsc(float _dist, float _angleLeft, float _angleRigth, float _angleBody) {
   // this creat the Osc message
   OscMessage msg = new OscMessage("/inputs");
   //this decompress the FloatList and makes the Osc message
@@ -139,10 +166,11 @@ void sendOsc(float _dist, float _angleLeft, float _angleRigth) {
   msg.add(_dist);
   msg.add(_angleLeft);
   msg.add(_angleRigth);
+  msg.add(_angleBody);
 
   //this send the message
   oscP5.send(msg, dest);
-  oscP5.send(msg, dest2);
+  //  oscP5.send(msg, dest2);
 }
 // draw the skeleton with the selected joints
 void drawSkeleton(int userId)
