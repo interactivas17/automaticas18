@@ -22,9 +22,10 @@ NetAddress dest2;
 // data to send to wekinator
 FloatList wings;
 
-int numBones = 6;
+int numBones = 12;
+int numUsers = 6;
 
-PVector[] usedBones = new PVector[numBones];
+PVector[][] usedBones = new PVector[numBones][numUsers];
 
 import SimpleOpenNI.*;
 
@@ -72,8 +73,10 @@ void setup()
   //initialize the FloatList
   wings = new FloatList(4);
 
-  for (int i = 0; i < usedBones.length; i++) {
-    usedBones[i] = new PVector();
+  for (int i = 0; i < numBones; i++) {
+    for (int j = 0; j < numUsers; j++){
+    usedBones[i][j] = new PVector();
+  }
   }
 }
 
@@ -96,17 +99,21 @@ void draw()
       drawSkeleton(userList[i]);
 
 
-      context.getJointPositionSkeleton(userList[0], SimpleOpenNI.SKEL_LEFT_HAND, usedBones[0]);
-      context.getJointPositionSkeleton(userList[0], SimpleOpenNI.SKEL_RIGHT_HAND, usedBones[1]);
-      context.getJointPositionSkeleton(userList[0], SimpleOpenNI.SKEL_LEFT_HIP, usedBones[2]);
-      context.getJointPositionSkeleton(userList[0], SimpleOpenNI.SKEL_RIGHT_HIP, usedBones[3]);
-      context.getJointPositionSkeleton(userList[0], SimpleOpenNI.SKEL_HEAD, usedBones[4]);
-      context.getJointPositionSkeleton(userList[0], SimpleOpenNI.SKEL_TORSO, usedBones[5]);
+      context.getJointPositionSkeleton(userList[i], SimpleOpenNI.SKEL_LEFT_HAND, usedBones[0][0]);
+      context.getJointPositionSkeleton(userList[i], SimpleOpenNI.SKEL_RIGHT_HAND, usedBones[1][0]);
+      context.getJointPositionSkeleton(userList[i], SimpleOpenNI.SKEL_LEFT_HIP, usedBones[2][0]);
+      context.getJointPositionSkeleton(userList[i], SimpleOpenNI.SKEL_RIGHT_HIP, usedBones[3][0]);
+      context.getJointPositionSkeleton(userList[i], SimpleOpenNI.SKEL_HEAD, usedBones[4][0]);
+      context.getJointPositionSkeleton(userList[i], SimpleOpenNI.SKEL_TORSO, usedBones[5][0]);
+      
+      
+      
+      //if (userList.length == ){}
 
-      float distHand = PVector.dist(usedBones[0], usedBones[1]);
-      float angleLeft = PVector.angleBetween(usedBones[0], usedBones[2]);
-      float angleRigth = PVector.angleBetween(usedBones[1], usedBones[3]);
-      float angleBody = PVector.angleBetween(usedBones[4], usedBones[5]);
+      float distHand = PVector.dist(usedBones[0][0], usedBones[1][0]);
+      float angleLeft = PVector.angleBetween(usedBones[0][0], usedBones[2][0]);
+      float angleRigth = PVector.angleBetween(usedBones[1][0], usedBones[3][0]);
+      float angleBody = PVector.angleBetween(usedBones[4][0], usedBones[5][0]);
 
       /*
       context.getJointPositionSkeleton(userList[1], SimpleOpenNI.SKEL_LEFT_HAND, usedBones[6]);
