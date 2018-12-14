@@ -74,9 +74,9 @@ void setup()
   wings = new FloatList(4);
 
   for (int i = 0; i < numBones; i++) {
-    for (int j = 0; j < numUsers; j++){
-    usedBones[i][j] = new PVector();
-  }
+    for (int j = 0; j < numUsers; j++) {
+      usedBones[i][j] = new PVector();
+    }
   }
 }
 
@@ -98,52 +98,120 @@ void draw()
       stroke(userClr[ (userList[i] - 1) % userClr.length ] );
       drawSkeleton(userList[i]);
 
+      if (userList.length == 1) {
 
-      context.getJointPositionSkeleton(userList[i], SimpleOpenNI.SKEL_LEFT_HAND, usedBones[0][0]);
-      context.getJointPositionSkeleton(userList[i], SimpleOpenNI.SKEL_RIGHT_HAND, usedBones[1][0]);
-      context.getJointPositionSkeleton(userList[i], SimpleOpenNI.SKEL_LEFT_HIP, usedBones[2][0]);
-      context.getJointPositionSkeleton(userList[i], SimpleOpenNI.SKEL_RIGHT_HIP, usedBones[3][0]);
-      context.getJointPositionSkeleton(userList[i], SimpleOpenNI.SKEL_HEAD, usedBones[4][0]);
-      context.getJointPositionSkeleton(userList[i], SimpleOpenNI.SKEL_TORSO, usedBones[5][0]);
-      
-      
-      
-      //if (userList.length == ){}
+        context.getJointPositionSkeleton(userList[0], SimpleOpenNI.SKEL_LEFT_HAND, usedBones[0][0]);
+        context.getJointPositionSkeleton(userList[0], SimpleOpenNI.SKEL_RIGHT_HAND, usedBones[1][0]);
+        context.getJointPositionSkeleton(userList[0], SimpleOpenNI.SKEL_LEFT_HIP, usedBones[2][0]);
+        context.getJointPositionSkeleton(userList[0], SimpleOpenNI.SKEL_RIGHT_HIP, usedBones[3][0]);
+        context.getJointPositionSkeleton(userList[0], SimpleOpenNI.SKEL_HEAD, usedBones[4][0]);
+        context.getJointPositionSkeleton(userList[0], SimpleOpenNI.SKEL_TORSO, usedBones[5][0]);
 
-      float distHand = PVector.dist(usedBones[0][0], usedBones[1][0]);
-      float angleLeft = PVector.angleBetween(usedBones[0][0], usedBones[2][0]);
-      float angleRigth = PVector.angleBetween(usedBones[1][0], usedBones[3][0]);
-      float angleBody = PVector.angleBetween(usedBones[4][0], usedBones[5][0]);
+        float distHand = PVector.dist(usedBones[0][0], usedBones[1][0]);
+        float angleLeft = PVector.angleBetween(usedBones[0][0], usedBones[2][0]);
+        float angleRigth = PVector.angleBetween(usedBones[1][0], usedBones[3][0]);
+        float angleBody = PVector.angleBetween(usedBones[4][0], usedBones[5][0]);
 
-      /*
-      context.getJointPositionSkeleton(userList[1], SimpleOpenNI.SKEL_LEFT_HAND, usedBones[6]);
-       context.getJointPositionSkeleton(userList[1], SimpleOpenNI.SKEL_RIGHT_HAND, usedBones[7]);
-       context.getJointPositionSkeleton(userList[1], SimpleOpenNI.SKEL_LEFT_HIP, usedBones[8]);
-       context.getJointPositionSkeleton(userList[1], SimpleOpenNI.SKEL_RIGHT_HIP, usedBones[9]);
-       context.getJointPositionSkeleton(userList[1], SimpleOpenNI.SKEL_HEAD, usedBones[10]);
-       context.getJointPositionSkeleton(userList[1], SimpleOpenNI.SKEL_TORSO, usedBones[11]);
-       
-       
-       
-       float distHand2 = PVector.dist(usedBones[0], usedBones[1]);
-       float angleLeft2 = PVector.angleBetween(usedBones[0], usedBones[2]);
-       float angleRigth2 = PVector.angleBetween(usedBones[1], usedBones[3]);
-       float angleBody2 = PVector.angleBetween(usedBones[4], usedBones[5]);
-       
-       float distHandR = (distHand + distHand2) / 2;
-       float angleLeftR = (distHand + distHand2) / 2;
-       float angleRigtR = (distHand + distHand2) / 2;
-       float angleBodyR = (distHand + distHand2) / 2;
-       */
+        sendOsc(distHand, degrees(angleLeft), degrees(angleRigth), degrees(angleBody));
+        println(distHand, degrees(angleLeft), degrees(angleRigth), degrees(angleBody), userList.length);
+      } else if (userList.length == 2) {
 
-      sendOsc(distHand, degrees(angleLeft), degrees(angleRigth), degrees(angleBody));
+        context.getJointPositionSkeleton(userList[0], SimpleOpenNI.SKEL_LEFT_HAND, usedBones[0][0]);
+        context.getJointPositionSkeleton(userList[0], SimpleOpenNI.SKEL_RIGHT_HAND, usedBones[1][0]);
+        context.getJointPositionSkeleton(userList[0], SimpleOpenNI.SKEL_LEFT_HIP, usedBones[2][0]);
+        context.getJointPositionSkeleton(userList[0], SimpleOpenNI.SKEL_RIGHT_HIP, usedBones[3][0]);
+        context.getJointPositionSkeleton(userList[0], SimpleOpenNI.SKEL_HEAD, usedBones[4][0]);
+        context.getJointPositionSkeleton(userList[0], SimpleOpenNI.SKEL_TORSO, usedBones[5][0]);
 
-      // wings.append(distHand);
-      // wings.append(angleLeft);
-      // wings.append(angleRigth);
-      println(distHand, degrees(angleLeft), degrees(angleRigth), degrees(angleBody));
-      //println(wings.get(0));
-    }      
+        context.getJointPositionSkeleton(userList[1], SimpleOpenNI.SKEL_LEFT_HAND, usedBones[0][1]);
+        context.getJointPositionSkeleton(userList[1], SimpleOpenNI.SKEL_RIGHT_HAND, usedBones[1][1]);
+        context.getJointPositionSkeleton(userList[1], SimpleOpenNI.SKEL_LEFT_HIP, usedBones[2][1]);
+        context.getJointPositionSkeleton(userList[1], SimpleOpenNI.SKEL_RIGHT_HIP, usedBones[3][1]);
+        context.getJointPositionSkeleton(userList[1], SimpleOpenNI.SKEL_HEAD, usedBones[4][1]);
+        context.getJointPositionSkeleton(userList[1], SimpleOpenNI.SKEL_TORSO, usedBones[5][1]);
+
+        float distHand = PVector.dist(usedBones[0][0], usedBones[1][0]);
+        float angleLeft = PVector.angleBetween(usedBones[0][0], usedBones[2][0]);
+        float angleRigth = PVector.angleBetween(usedBones[1][0], usedBones[3][0]);
+        float angleBody = PVector.angleBetween(usedBones[4][0], usedBones[5][0]);
+
+        float distHand2 = PVector.dist(usedBones[0][1], usedBones[1][1]);
+        float angleLeft2 = PVector.angleBetween(usedBones[0][1], usedBones[2][1]);
+        float angleRigth2 = PVector.angleBetween(usedBones[1][1], usedBones[3][1]);
+        float angleBody2 = PVector.angleBetween(usedBones[4][1], usedBones[5][1]);
+
+        distHand = (distHand + distHand2)/2;
+        angleLeft = (angleLeft + angleLeft2)/2;
+        angleRigth = (angleRigth + angleRigth2)/2;
+        angleBody = (angleBody + angleBody2)/2;
+
+        sendOsc(distHand, degrees(angleLeft), degrees(angleRigth), degrees(angleBody));
+
+        println(distHand, degrees(angleLeft), degrees(angleRigth), degrees(angleBody), userList.length);
+      } else if (userList.length == 3) {
+
+        context.getJointPositionSkeleton(userList[0], SimpleOpenNI.SKEL_LEFT_HAND, usedBones[0][0]);
+        context.getJointPositionSkeleton(userList[0], SimpleOpenNI.SKEL_RIGHT_HAND, usedBones[1][0]);
+        context.getJointPositionSkeleton(userList[0], SimpleOpenNI.SKEL_LEFT_HIP, usedBones[2][0]);
+        context.getJointPositionSkeleton(userList[0], SimpleOpenNI.SKEL_RIGHT_HIP, usedBones[3][0]);
+        context.getJointPositionSkeleton(userList[0], SimpleOpenNI.SKEL_HEAD, usedBones[4][0]);
+        context.getJointPositionSkeleton(userList[0], SimpleOpenNI.SKEL_TORSO, usedBones[5][0]);
+
+        context.getJointPositionSkeleton(userList[1], SimpleOpenNI.SKEL_LEFT_HAND, usedBones[0][1]);
+        context.getJointPositionSkeleton(userList[1], SimpleOpenNI.SKEL_RIGHT_HAND, usedBones[1][1]);
+        context.getJointPositionSkeleton(userList[1], SimpleOpenNI.SKEL_LEFT_HIP, usedBones[2][1]);
+        context.getJointPositionSkeleton(userList[1], SimpleOpenNI.SKEL_RIGHT_HIP, usedBones[3][1]);
+        context.getJointPositionSkeleton(userList[1], SimpleOpenNI.SKEL_HEAD, usedBones[4][1]);
+        context.getJointPositionSkeleton(userList[1], SimpleOpenNI.SKEL_TORSO, usedBones[5][1]);
+
+        context.getJointPositionSkeleton(userList[2], SimpleOpenNI.SKEL_LEFT_HAND, usedBones[0][2]);
+        context.getJointPositionSkeleton(userList[2], SimpleOpenNI.SKEL_RIGHT_HAND, usedBones[1][2]);
+        context.getJointPositionSkeleton(userList[2], SimpleOpenNI.SKEL_LEFT_HIP, usedBones[2][2]);
+        context.getJointPositionSkeleton(userList[2], SimpleOpenNI.SKEL_RIGHT_HIP, usedBones[3][2]);
+        context.getJointPositionSkeleton(userList[2], SimpleOpenNI.SKEL_HEAD, usedBones[4][2]);
+        context.getJointPositionSkeleton(userList[2], SimpleOpenNI.SKEL_TORSO, usedBones[5][2]);
+
+        float distHand = PVector.dist(usedBones[0][0], usedBones[1][0]);
+        float angleLeft = PVector.angleBetween(usedBones[0][0], usedBones[2][0]);
+        float angleRigth = PVector.angleBetween(usedBones[1][0], usedBones[3][0]);
+        float angleBody = PVector.angleBetween(usedBones[4][0], usedBones[5][0]);
+
+        float distHand2 = PVector.dist(usedBones[0][1], usedBones[1][1]);
+        float angleLeft2 = PVector.angleBetween(usedBones[0][1], usedBones[2][1]);
+        float angleRigth2 = PVector.angleBetween(usedBones[1][1], usedBones[3][1]);
+        float angleBody2 = PVector.angleBetween(usedBones[4][1], usedBones[5][1]);
+
+        float distHand3 = PVector.dist(usedBones[0][2], usedBones[1][2]);
+        float angleLeft3 = PVector.angleBetween(usedBones[0][2], usedBones[2][2]);
+        float angleRigth3 = PVector.angleBetween(usedBones[1][2], usedBones[3][2]);
+        float angleBody3 = PVector.angleBetween(usedBones[4][2], usedBones[5][2]);
+
+        distHand = (distHand + distHand2 + distHand3)/3;
+        angleLeft = (angleLeft + angleLeft2 + angleLeft3)/3;
+        angleRigth = (angleRigth + angleRigth2 + angleRigth3)/3;
+        angleBody = (angleBody + angleBody2 + angleBody3)/3;
+
+        sendOsc(distHand, degrees(angleLeft), degrees(angleRigth), degrees(angleBody));
+
+        println(distHand, degrees(angleLeft), degrees(angleRigth), degrees(angleBody), userList.length);
+      } else {
+
+        context.getJointPositionSkeleton(userList[0], SimpleOpenNI.SKEL_LEFT_HAND, usedBones[0][0]);
+        context.getJointPositionSkeleton(userList[0], SimpleOpenNI.SKEL_RIGHT_HAND, usedBones[1][0]);
+        context.getJointPositionSkeleton(userList[0], SimpleOpenNI.SKEL_LEFT_HIP, usedBones[2][0]);
+        context.getJointPositionSkeleton(userList[0], SimpleOpenNI.SKEL_RIGHT_HIP, usedBones[3][0]);
+        context.getJointPositionSkeleton(userList[0], SimpleOpenNI.SKEL_HEAD, usedBones[4][0]);
+        context.getJointPositionSkeleton(userList[0], SimpleOpenNI.SKEL_TORSO, usedBones[5][0]);
+
+        float distHand = PVector.dist(usedBones[0][0], usedBones[1][0]);
+        float angleLeft = PVector.angleBetween(usedBones[0][0], usedBones[2][0]);
+        float angleRigth = PVector.angleBetween(usedBones[1][0], usedBones[3][0]);
+        float angleBody = PVector.angleBetween(usedBones[4][0], usedBones[5][0]);
+
+        sendOsc(distHand, degrees(angleLeft), degrees(angleRigth), degrees(angleBody));
+        println(distHand, degrees(angleLeft), degrees(angleRigth), degrees(angleBody), userList.length);
+      }
+    }
 
     // draw the center of mass
     if (context.getCoM(userList[i], com))
@@ -222,15 +290,15 @@ void onNewUser(SimpleOpenNI curContext, int userId)
   curContext.startTrackingSkeleton(userId);
 }
 
-void onLostUser(SimpleOpenNI curContext, int userId)
-{
-  println("onLostUser - userId: " + userId);
-}
+//void onLostUser(SimpleOpenNI curContext, int userId)
+//{
+//  println("onLostUser - userId: " + userId);
+//}
 
-void onVisibleUser(SimpleOpenNI curContext, int userId)
-{
-  //println("onVisibleUser - userId: " + userId);
-}
+//void onVisibleUser(SimpleOpenNI curContext, int userId)
+//{
+//  //println("onVisibleUser - userId: " + userId);
+//}
 
 
 void keyPressed()
